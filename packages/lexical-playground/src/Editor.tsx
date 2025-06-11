@@ -202,14 +202,14 @@ export default function Editor(): JSX.Element {
             <CodeHighlightPlugin />
             <ListPlugin hasStrictIndent={listStrictIndent} />
             <CheckListPlugin />
-            <TablePlugin
+            {/* <TablePlugin
               hasCellMerge={tableCellMerge}
               hasCellBackgroundColor={tableCellBackgroundColor}
               hasHorizontalScroll={tableHorizontalScroll}
-            />
+            /> */}
             <TableCellResizer />
             <ImagesPlugin />
-            <InlineImagePlugin />
+            {/* <InlineImagePlugin /> */}
             <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
             <PollPlugin />
             <TwitterPlugin />
@@ -239,7 +239,7 @@ export default function Editor(): JSX.Element {
             )}
             {floatingAnchorElem && !isSmallWidthViewport && (
               <>
-                <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+                {/* <DraggableBlockPlugin anchorElem={floatingAnchorElem} /> */}
                 <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
                 <TableHoverActionsPlugin anchorElem={floatingAnchorElem} />
                 <FloatingTextFormatToolbarPlugin

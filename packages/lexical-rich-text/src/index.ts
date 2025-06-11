@@ -677,6 +677,7 @@ export function registerRichText(editor: LexicalEditor): () => void {
           return false;
         }
         selection.removeText();
+        $setSelection(selection);
         return true;
       },
       COMMAND_PRIORITY_EDITOR,

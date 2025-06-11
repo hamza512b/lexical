@@ -12,6 +12,7 @@ import {
   $getHtmlContent,
   $insertDataTransferForPlainText,
 } from '@lexical/clipboard';
+import {eventFiles} from '@lexical/rich-text';
 import {
   $moveCharacter,
   $shouldOverrideDefaultCharacterSelection,
@@ -21,6 +22,7 @@ import {
   $getSelection,
   $isRangeSelection,
   $selectAll,
+  $setSelection,
   COMMAND_PRIORITY_EDITOR,
   CONTROLLED_TEXT_INSERTION_COMMAND,
   COPY_COMMAND,
@@ -28,6 +30,7 @@ import {
   DELETE_CHARACTER_COMMAND,
   DELETE_LINE_COMMAND,
   DELETE_WORD_COMMAND,
+  DRAGOVER_COMMAND,
   DRAGSTART_COMMAND,
   DROP_COMMAND,
   INSERT_LINE_BREAK_COMMAND,
@@ -153,14 +156,69 @@ export function registerPlainText(editor: LexicalEditor): () => void {
       },
       COMMAND_PRIORITY_EDITOR,
     ),
-    editor.registerCommand<InputEvent | string>(
-      CONTROLLED_TEXT_INSERTION_COMMAND,
-      (eventOrText) => {
+    editor.registerCommand<DragEvent>(
+      DRAGOVER_COMMAND,
+      (event) => {
+        const [isFileTransfer] = eventFiles(event);
+        const selection = $getSelection();
+        if (isFileTransfer && !$isRangeSelection(selection)) {
+          return false;
+        }
+        // const x = event.clientX;
+        // const y = event.clientY;
+        // const eventRange = caretFromPoint(x, y);
+        // if (eventRange !== null) {
+        //   const node = $getNearestNodeFromDOMNode(eventRange.node);
+        //   if ($isDecoratorNode(node)) {
+        //     // Show browser caret as the user is dragging the media across the screen. Won't work
+        //     // for DecoratorNode nor it's relevant.
+        //     event.preventDefault();
+        //   }
+        // }
+        return true;
+      },
+      COMMAND_PRIORITY_EDITOR,
+    ),
+    editor.registerCommand<DragEvent>(
+      DRAGSTART_COMMAND,
+      (event) => {
+        const [isFileTransfer] = eventFiles(event);
+        const selection = $getSelection();
+        if (isFileTransfer && !$isRangeSelection(selection)) {
+          return false;
+        }
+        return true;
+      },
+      COMMAND_PRIORITY_EDITOR,
+    ),
+    editor.registerCommand<DragEvent>(
+      DROP_COMMAND,
+      (event) => {
         const selection = $getSelection();
 
         if (!$isRangeSelection(selection)) {
           return false;
         }
+
+        // TODO: Make drag and drop work at some point.
+        // event.preventDefault();
+        return true;
+      },
+      COMMAND_PRIORITY_EDITOR,
+    ),
+    editor.registerCommand<InputEvent | string>(
+      CONTROLLED_TEXT_INSERTION_COMMAND,
+      (eventOrText) => {
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection)) {
+          return false;
+        }
+
+        console.log(
+          'INSERT Anchor',
+          selection.anchor.getNode().getTextContent(),
+        );
+        console.log('INSERT Focus', selection.focus.getNode().getTextContent());
 
         if (typeof eventOrText === 'string') {
           selection.insertText(eventOrText);
@@ -168,6 +226,7 @@ export function registerPlainText(editor: LexicalEditor): () => void {
           const dataTransfer = eventOrText.dataTransfer;
 
           if (dataTransfer != null) {
+            console.log('DATA');
             $insertDataTransferForPlainText(dataTransfer, selection);
           } else {
             const data = eventOrText.data;
@@ -190,6 +249,12 @@ export function registerPlainText(editor: LexicalEditor): () => void {
         if (!$isRangeSelection(selection)) {
           return false;
         }
+
+        console.log(
+          'REMOVE Anchor',
+          selection.anchor.getNode().getTextContent(),
+        );
+        console.log('REMOVE Focus', selection.focus.getNode().getTextContent());
 
         selection.removeText();
         return true;
@@ -380,21 +445,6 @@ export function registerPlainText(editor: LexicalEditor): () => void {
         }
 
         onPasteForPlainText(event, editor);
-        return true;
-      },
-      COMMAND_PRIORITY_EDITOR,
-    ),
-    editor.registerCommand<DragEvent>(
-      DROP_COMMAND,
-      (event) => {
-        const selection = $getSelection();
-
-        if (!$isRangeSelection(selection)) {
-          return false;
-        }
-
-        // TODO: Make drag and drop work at some point.
-        event.preventDefault();
         return true;
       },
       COMMAND_PRIORITY_EDITOR,

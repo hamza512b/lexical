@@ -28,6 +28,9 @@ export default function DragDropPaste(): null {
     return editor.registerCommand(
       DRAG_DROP_PASTE,
       (files) => {
+        if (files.length === 0) {
+          return false;
+        }
         (async () => {
           const filesResult = await mediaFileReader(
             files,
